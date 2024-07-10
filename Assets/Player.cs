@@ -43,9 +43,6 @@ public class Player : MonoBehaviour
     private void CheckInput()
     {
         xInput = Input.GetAxisRaw("Horizontal");
-
-
-
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Jump();
@@ -70,6 +67,8 @@ public class Player : MonoBehaviour
         bool isMovin = rb.velocity.x != 0;
 
         anim.SetBool("isMoving", isMovin);
+        anim.SetBool("isGrounded", isGrounded);
+        anim.SetFloat("yVelocity", rb.velocity.y);
     }
 
     private void TurnCharacter() {
