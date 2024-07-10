@@ -4,19 +4,22 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private Rigidbody2D rb;
     private Animator anim;
-
+    [SerializeField] private Rigidbody2D rb;
     [SerializeField] private float moveSpeed = 1;
     [SerializeField] private float jumpForce = 1;
-
     [SerializeField] private float xInput;
 
     private int facinDir = 1;
     private bool facingRight = true;
+    
+    private bool isGrounded;
     [SerializeField] private float groundCheckDistance = 1;
     [SerializeField] private LayerMask whatIsGround = 1;
-    private bool isGrounded;
+
+    [SerializeField] private float dashDuration = 1;
+    [SerializeField] private float dashTime = 1;
+    [SerializeField] private float dashSpeed = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -31,6 +34,13 @@ public class Player : MonoBehaviour
         CollisionChecks();
         Movement();
         CheckInput();
+
+        dashTime -= Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.LeftShift)) {
+            dashTime = dashDuration;
+        }
+
         TurnController();
         AnimatorControllers();
     }
@@ -51,7 +61,15 @@ public class Player : MonoBehaviour
 
     private void Movement()
     {
-        rb.velocity = new Vector2(xInput * moveSpeed, rb.velocity.y);
+        if (dashTime > 0) { 
+            // rb.velocity = new Vector2(xInput * dashSpeed, rb.velocity.y); this one still makes you fall down while dashing
+            rb.velocity = new Vector2(xInput * dashSpeed, 0);
+        }
+        else
+        {
+            rb.velocity = new Vector2(xInput * moveSpeed, rb.velocity.y);
+        }
+        
     }
 
     private void Jump()
@@ -68,6 +86,7 @@ public class Player : MonoBehaviour
 
         anim.SetBool("isMoving", isMovin);
         anim.SetBool("isGrounded", isGrounded);
+        anim.SetBool("isDashing", dashTime > 0);
         anim.SetFloat("yVelocity", rb.velocity.y);
     }
 
