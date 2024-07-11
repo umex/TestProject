@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float dashDuration = 1;
     [SerializeField] private float dashTime = 1;
     [SerializeField] private float dashSpeed = 1;
+    [SerializeField] private float dashCooldown = 1;
+    private float dashCooldownTimer = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -31,16 +33,11 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        dashTime -= Time.deltaTime;
+        dashCooldownTimer -= Time.deltaTime;
         CollisionChecks();
         Movement();
         CheckInput();
-
-        dashTime -= Time.deltaTime;
-
-        if (Input.GetKeyDown(KeyCode.LeftShift)) {
-            dashTime = dashDuration;
-        }
-
         TurnController();
         AnimatorControllers();
     }
@@ -56,6 +53,20 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Jump();
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            DashAbility();
+        }
+    }
+
+    private void DashAbility()
+    {
+        if(dashCooldownTimer < 0)
+        {
+            dashCooldownTimer = dashCooldown;
+            dashTime = dashDuration;
         }
     }
 

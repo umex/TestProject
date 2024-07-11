@@ -666,6 +666,8 @@ MonoBehaviour:
   dashDuration: 0.4
   dashTime: 0
   dashSpeed: 15
+  dashCooldown: 1
+  dashCooldownTimer: 10
 --- !u!70 &1621662276
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
