@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class Player : Entity
 {
+    [Header("Move info")]
     [SerializeField] private float moveSpeed = 1;
     [SerializeField] private float jumpForce = 1;
+
+
     [SerializeField] private float xInput;
 
     [SerializeField] private float dashDuration = 1;

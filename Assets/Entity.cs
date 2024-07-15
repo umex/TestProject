@@ -11,6 +11,9 @@ public class Entity : MonoBehaviour
     [SerializeField] protected Transform groundCheck;
     [SerializeField] protected float groundCheckDistance = 1;
     [SerializeField] protected LayerMask whatIsGround = 1;
+    [Space]
+    [SerializeField] protected Transform wallCheck;
+    [SerializeField] protected float wallCheckDistance = 1;
 
 
     protected int facinDir = 1;
@@ -18,6 +21,7 @@ public class Entity : MonoBehaviour
 
 
     protected bool isGrounded;
+    protected bool isWallDetected;
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -35,6 +39,7 @@ public class Entity : MonoBehaviour
     private void CollisionChecks()
     {
         isGrounded = Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, whatIsGround);
+        isWallDetected = Physics2D.Raycast(wallCheck.position, Vector2.right, wallCheckDistance * facinDir, whatIsGround);
     }
 
     protected virtual void TurnCharacter()
@@ -48,5 +53,8 @@ public class Entity : MonoBehaviour
     {
         Gizmos.DrawLine(groundCheck.position,
             new Vector3(groundCheck.position.x, groundCheck.position.y - groundCheckDistance));
+
+        Gizmos.DrawLine(wallCheck.position,
+            new Vector3(wallCheck.position.x + wallCheckDistance * facinDir, wallCheck.position.y));
     }
 }
