@@ -2,20 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : Entity
 {
-    private Animator anim;
-    [SerializeField] private Rigidbody2D rb;
     [SerializeField] private float moveSpeed = 1;
     [SerializeField] private float jumpForce = 1;
     [SerializeField] private float xInput;
-
-    private int facinDir = 1;
-    private bool facingRight = true;
-    
-    private bool isGrounded;
-    [SerializeField] private float groundCheckDistance = 1;
-    [SerializeField] private LayerMask whatIsGround = 1;
 
     [SerializeField] private float dashDuration = 1;
     [SerializeField] private float dashTime = 1;
@@ -23,33 +14,43 @@ public class Player : MonoBehaviour
     [SerializeField] private float dashCooldown = 1;
     private float dashCooldownTimer = 1;
 
-    // Start is called before the first frame update
-    void Start()
+    private bool isAttacking;
+    private int comboCounter;
+    [SerializeField] private float comboTimeWindow;
+    [SerializeField] private float comboTime = .3f;
+
+    protected override void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        anim = GetComponentInChildren<Animator>();
+        base.Start();
     }
 
     // Update is called once per frame
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         dashTime -= Time.deltaTime;
         dashCooldownTimer -= Time.deltaTime;
-        CollisionChecks();
+        comboTimeWindow -= Time.deltaTime;
+
+       
         Movement();
         CheckInput();
         TurnController();
         AnimatorControllers();
     }
 
-    private void CollisionChecks()
-    {
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
-    }
+
 
     private void CheckInput()
     {
         xInput = Input.GetAxisRaw("Horizontal");
+
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            StartAttackCombo();
+        }
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Jump();
@@ -61,9 +62,24 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void StartAttackCombo()
+    {
+        if (!isGrounded)
+            return;
+
+        if (comboTimeWindow < 0)
+        {
+            comboCounter = 0;
+        }
+
+        isAttacking = true;
+        comboTimeWindow = comboTime;
+    }
+
     private void DashAbility()
     {
-        if(dashCooldownTimer < 0)
+
+        if(dashCooldownTimer < 0 && !isAttacking)
         {
             dashCooldownTimer = dashCooldown;
             dashTime = dashDuration;
@@ -72,9 +88,12 @@ public class Player : MonoBehaviour
 
     private void Movement()
     {
-        if (dashTime > 0) { 
+        if (isAttacking) {
+            rb.velocity = new Vector2(0, 0);
+        }
+        else if (dashTime > 0) { 
             // rb.velocity = new Vector2(xInput * dashSpeed, rb.velocity.y); this one still makes you fall down while dashing
-            rb.velocity = new Vector2(xInput * dashSpeed, 0);
+            rb.velocity = new Vector2(facinDir * dashSpeed, 0);
         }
         else
         {
@@ -95,17 +114,17 @@ public class Player : MonoBehaviour
 
         bool isMovin = rb.velocity.x != 0;
 
+
+        anim.SetFloat("yVelocity", rb.velocity.y);
+
         anim.SetBool("isMoving", isMovin);
         anim.SetBool("isGrounded", isGrounded);
         anim.SetBool("isDashing", dashTime > 0);
-        anim.SetFloat("yVelocity", rb.velocity.y);
+        anim.SetBool("isAttacking", isAttacking);
+        anim.SetInteger("comboCounter", comboCounter);
     }
 
-    private void TurnCharacter() {
-        facinDir = facinDir * -1;
-        facingRight = !facingRight;
-        transform.Rotate(0,180,0);
-    }
+
 
     private void TurnController() {
         if (rb.velocity.x > 0 && !facingRight) {
@@ -117,10 +136,15 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawLine(transform.position, 
-            new Vector3(transform.position.x, transform.position.y - groundCheckDistance));
-    }
 
+
+    public void AttackingOver()
+    {
+        isAttacking = false;
+        comboCounter++;
+        if (comboCounter > 2)
+        {
+            comboCounter = 0;
+        }
+    }
 }
